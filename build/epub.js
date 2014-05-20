@@ -3066,8 +3066,29 @@ EPUBJS.core.request = function(url, type, withCredentials) {
 			if (this.status === 200 || this.responseXML ) { //-- Firefox is reporting 0 for blob urls
 				var r;
 				
+				console.log(this);
+				
+				if (window.DOMParser)
+                {
+                  parser=new DOMParser();
+                  try
+                  {
+                    xmlDoc=parser.parseFromString(atob(this.response),"text/xml");
+                  }
+                catch(err)
+                  {
+                  //Handle errors here
+                  }
+                }
+               
+                if (xmlDoc !== undefined)
+                {
+                    type = 'xml';
+                }
+            
 				if(type == 'xml'){
-					r = this.responseXML;
+				    console.log(xmlDoc);
+					r = xmlDoc;
 				}else
 				if(type == 'json'){
 					r = JSON.parse(this.response);
@@ -4740,6 +4761,7 @@ EPUBJS.Render.Iframe.prototype.load = function(url){
 		this.unload();
 	}
 	
+	var _this = this;
 	this.iframe.onload = function() {
 		render.document = render.iframe.contentDocument;
 		
@@ -4756,6 +4778,14 @@ EPUBJS.Render.Iframe.prototype.load = function(url){
 		}
 	
 		deferred.resolve(render.docEl);
+
+        //clouddistrict		
+		$('iframe').each(function(){
+            if ($(this).contents().find('.listo').length == 0)
+            {
+                $(this).contents().find('body').html(atob($(this).contents().find('body pre').html())).append('<span class="listo"></span>');
+            }
+        });
 	};
 	
 	this.iframe.onerror = function(e) {
